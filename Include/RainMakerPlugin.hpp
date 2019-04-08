@@ -1,21 +1,3 @@
-//‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
-//›                                                                         ﬁ
-//› Module: Internals Example Header File                                   ﬁ
-//›                                                                         ﬁ
-//› Description: Declarations for the Internals Example Plugin              ﬁ
-//›                                                                         ﬁ
-//›                                                                         ﬁ
-//› This source code module, and all information, data, and algorithms      ﬁ
-//› associated with it, are part of CUBE technology (tm).                   ﬁ
-//›                 PROPRIETARY AND CONFIDENTIAL                            ﬁ
-//› Copyright (c) 1996-2014 Image Space Incorporated.  All rights reserved. ﬁ
-//›                                                                         ﬁ
-//›                                                                         ﬁ
-//› Change history:                                                         ﬁ
-//›   tag.2005.11.30: created                                               ﬁ
-//›                                                                         ﬁ
-//ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
-
 #ifndef _RAINMAKER_H
 #define _RAINMAKER_H
 
@@ -26,6 +8,34 @@
 #include <list>
 #include<string>
 
+typedef std::set<std::string> StartMode;
+typedef std::set<std::string> WrFile;
+
+class RainMakerData
+{
+public:
+	StartMode StartMode;
+	WrFile EverySessionPracticeWrFile;
+	WrFile EverySessionQualiWrFile;
+	WrFile EverySessionRaceWrFile;
+	WrFile OnceSessionWrFile;
+	int OnceSessionSession;
+	WrFile TimeSessionWrFile;
+	int TimeSessionStartTime;
+	
+	bool ApplyCloudinessInstantly;
+	bool LoopWrFileReading;
+	void clear() {
+		StartMode.clear();
+		EverySessionPracticeWrFile.clear();
+		EverySessionQualiWrFile.clear();
+		EverySessionRaceWrFile.clear();
+		OnceSessionWrFile.clear();
+		TimeSessionWrFile.clear();
+		LoopWrFileReading = false;
+		ApplyCloudinessInstantly = false;
+	}
+};
 
 // This is used for the app to use the plugin for its intended purpose
 class RainMakerPlugin : public InternalsPluginV07  // REMINDER: exported function GetPluginVersion() should return 1 if you are deriving from this InternalsPluginV01, 2 for InternalsPluginV02, etc.
@@ -57,10 +67,6 @@ class RainMakerPlugin : public InternalsPluginV07  // REMINDER: exported functio
   void StartSession();           // session has started
   void EndSession();             // session has ended
 
-  bool GetCustomVariable(long i, CustomVariableV01 &var);
-  void AccessCustomVariable(CustomVariableV01 &var);
-  void GetCustomVariableSetting(CustomVariableV01 &var, long i, CustomSettingV01 &setting);
-
   // GAME OUTPUT
   long WantsTelemetryUpdates() { return( 0 ); } // CHANGE TO 1 TO ENABLE TELEMETRY EXAMPLE!
   bool WantsGraphicsUpdates() { return( false ); } // CHANGE TO TRUE TO ENABLE GRAPHICS EXAMPLE!
@@ -76,6 +82,7 @@ class RainMakerPlugin : public InternalsPluginV07  // REMINDER: exported functio
 	 std::string mRainMakerDataFile;
 	 std::string mRainMakerLogFile;
 	 void RainMakerPlugin::WriteToLogFile(const char* const openStr, const char* const type, const char* const msg);
+	 void LoadConf();
 };
 
 

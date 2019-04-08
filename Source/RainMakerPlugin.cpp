@@ -1,27 +1,10 @@
-//‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
-//›                                                                         ﬁ
-//› Module: Internals Example Source File                                   ﬁ
-//›                                                                         ﬁ
-//› Description: Declarations for the Internals Example Plugin              ﬁ
-//›                                                                         ﬁ
-//›                                                                         ﬁ
-//› This source code module, and all information, data, and algorithms      ﬁ
-//› associated with it, are part of CUBE technology (tm).                   ﬁ
-//›                 PROPRIETARY AND CONFIDENTIAL                            ﬁ
-//› Copyright (c) 1996-2014 Image Space Incorporated.  All rights reserved. ﬁ
-//›                                                                         ﬁ
-//›                                                                         ﬁ
-//› Change history:                                                         ﬁ
-//›   tag.2005.11.30: created                                               ﬁ
-//›                                                                         ﬁ
-//ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
-
 #include "RainMakerPlugin.hpp"          // corresponding header file
 #include <time.h>
 #include <string>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include "jsonxx.h"
 
 
 // plugin information
@@ -89,6 +72,14 @@ void RainMakerPlugin::WriteToLogFile( const char * const openStr, const char* co
 
 }
 
+void RainMakerPlugin::LoadConf()
+{
+	using namespace jsonxx;
+
+	std::ifstream iFile(mRainMakerDataFile);
+	std::string strJSON((std::istreambuf_iterator<char>(iFile)), std::istreambuf_iterator<char>());
+	iFile.close();
+}
 
 void RainMakerPlugin::Startup( long version )
 {
@@ -134,124 +125,4 @@ void RainMakerPlugin::ExitRealtime()
 void RainMakerPlugin::UpdateScoring( const ScoringInfoV01 &info )
 {
 
-}
-
-bool RainMakerPlugin::GetCustomVariable(long i, CustomVariableV01 &var)
-{
-	WriteToLogFile("a", "INFO", "- GetCustomVariable");
-	switch (i)
-	{
-		case 0:
-		{
-			// rF2 will automatically create this variable and default it to 1 (true) unless we create it first, in which case we can choose the default.
-			strcpy_s(var.mCaption, " Enabled");
-			var.mNumSettings = 2;
-			var.mCurrentSetting = 1;
-			return(true);
-		}
-
-		case 1:
-		{
-			strcpy_s(var.mCaption, "Logging");
-			var.mNumSettings = 2;
-			var.mCurrentSetting = 0;
-			return(true);
-		}
-
-		case 2:
-		{
-			strcpy_s(var.mCaption, "StartMode");
-			var.mNumSettings = 4;
-			var.mCurrentSetting = 1;
-			return(true);
-		}
-		case 3:
-		{
-			strcpy_s(var.mCaption, "LoopWrFileReading");
-			var.mNumSettings = 2;
-			var.mCurrentSetting = 0;
-			return(true);
-		}
-		case 4:
-		{
-			strcpy_s(var.mCaption, "ApplyCloudinessInstantly");
-			var.mNumSettings = 2;
-			var.mCurrentSetting = 0;
-			return(true);
-		}
-	
-	}
-	return(false);
-}
-
-void RainMakerPlugin::AccessCustomVariable(CustomVariableV01 &var)
-{
-	if (0 == _stricmp(var.mCaption, " Enabled"))
-	{
-		// Do nothing; this variable is just for rF2 to know whether to keep the plugin loaded.
-	}
-	else if (0 == _stricmp(var.mCaption, "Logging"))
-	{
-		// Set a flag whether we want logging enabled ... it may be too early to actually open the file because
-		// the call SetEnvironment() may not have been called yet.
-		mLogging = (var.mCurrentSetting != 0);
-	}
-	else if (0 == _stricmp(var.mCaption, "StartMode"))
-	{
-		mStartMode = var.mCurrentSetting;
-	}
-	else if (0 == _stricmp(var.mCaption, "LoopWrFileReading"))
-	{
-		mLoopWrFileReading = var.mCurrentSetting;
-	}
-	else if (0 == _stricmp(var.mCaption, "ApplyCloudinessInstantly"))
-	{
-		mLoopWrFileReading = var.mCurrentSetting;
-	}
-	else
-	{
-	}
-}
-
-void RainMakerPlugin::GetCustomVariableSetting(CustomVariableV01 &var, long i, CustomSettingV01 &setting)
-{
-	if (0 == _stricmp(var.mCaption, " Enabled"))
-	{
-		if (0 == i)
-			strcpy_s(setting.mName, "False");
-		else
-			strcpy_s(setting.mName, "True");
-	}
-	else if (0 == _stricmp(var.mCaption, "Logging"))
-	{
-		if (0 == i)
-			strcpy_s(setting.mName, "False");
-		else
-			strcpy_s(setting.mName, "True");
-	}
-	else if (0 == _stricmp(var.mCaption, "Startmode"))
-	{
-		switch (i)
-		{
-		case 0:  sprintf_s(setting.mName, "Nothing"); break; // Yes, these two are functionally equivalent, because we never
-		case 1:  sprintf_s(setting.mName, "Time"); break; // even try to adjust under green.
-		case 2:  sprintf_s(setting.mName, "Every Session"); break;
-		case 3:  sprintf_s(setting.mName, "Once Session"); break;
-		default: sprintf_s(setting.mName, "Nothing"); break; // We don't actually try to adjust during race halt currently.
-		}
-	}
-	else if (0 == _stricmp(var.mCaption, "LoopWrFileReading"))
-	{
-		if (0 == i)
-			strcpy_s(setting.mName, "False");
-		else
-			strcpy_s(setting.mName, "True");
-	}
-	else if (0 == _stricmp(var.mCaption, "ApplyCloudinessInstantly"))
-	{
-		if (0 == i)
-			strcpy_s(setting.mName, "False");
-		else
-			strcpy_s(setting.mName, "True");
-	}
 }
