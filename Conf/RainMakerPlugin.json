@@ -1,0 +1,22 @@
+{
+	// StartMode: time | everysession | oncesession
+	"StartMode": "time",
+	
+	// mapped to mApplyCloudinessInstantly
+	"ApplyCloudinessInstantly": false,
+	// If no more lines to read in current WrFile, loop?
+	"LoopWrFileReading": false,
+	
+	// if StartMode=time
+	"EverySessionPracticeWrFile": "",
+	"EverySessionQualiWrFile": "",
+	"EverySessionRaceWrFile": "",
+	
+	// if StartMode=oncesession
+	"OnceSessionWrFile": "",
+	"OnceSessionSession": ""
+	
+	// if StartMode=timesession
+	"TimeSessionWrFile": "",
+	"TimeSessionStartTime": ""
+}
