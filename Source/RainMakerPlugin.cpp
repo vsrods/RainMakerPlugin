@@ -83,10 +83,7 @@ void RainMakerPlugin::LoadConf()
 
 void RainMakerPlugin::Startup( long version )
 {
-  char temp[80];
-  sprintf( temp, "-STARTUP- (version %.3f)", (float) version / 1000.0f );
-
-  WriteToLogFile( "a", "INFO", temp );
+  WriteToLogFile( "a", "INFO", "-STARTUP-" );
 }
 
 
