@@ -4,8 +4,6 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#include "jsonxx.h"
-
 
 // plugin information
 
@@ -24,8 +22,10 @@ PluginObject* __cdecl CreatePluginObject() { return(static_cast<PluginObject*>(n
 extern "C" __declspec(dllexport)
 void __cdecl DestroyPluginObject(PluginObject* obj) { delete(static_cast<RainMakerPlugin*>(obj)); }
 
+
 RainMakerPlugin::RainMakerPlugin() 
 {
+	mEnvironmentSet = false;
 }
 
 RainMakerPlugin::~RainMakerPlugin()
@@ -34,12 +34,13 @@ RainMakerPlugin::~RainMakerPlugin()
 
 void RainMakerPlugin::SetEnvironment(const EnvironmentInfoV01 &info)
 {
+	WriteToLogFile( "INFO", "-SET ENVIRONMENT-");
 	if (mEnvironmentSet) return;
 	mEnvironmentSet = true;
 
-	char buftime[128], bufdate[128];
-	_strtime_s(buftime, 128);
-	_strdate_s(bufdate, 128);
+	//char buftime[128], bufdate[128];
+	//_strtime_s(buftime, 128);
+	//_strdate_s(bufdate, 128);
 
 	std::string ProfilePath;
 	std::string UserdataPath;
@@ -55,71 +56,101 @@ void RainMakerPlugin::SetEnvironment(const EnvironmentInfoV01 &info)
 	mRainMakerLogFile.append("\\Log\\RainMakerPluginLog.txt");
 }
 
-void RainMakerPlugin::WriteToLogFile( const char * const openStr, const char* const type, const char * const msg )
+void RainMakerPlugin::WriteToLogFile( const char* const type, const char * const msg )
 {
-  FILE *fo;
-  char buftime[128], bufdate[128];
-
   _strtime_s(buftime, 128);
   _strdate_s(bufdate, 128);
 
-  fo = fopen(mRainMakerLogFile.c_str(), openStr );
-  if( fo != NULL )
+  FILE* fo = fopen(mRainMakerLogFile.c_str(), "a" );
+  if( fo )
   {
+	//fprintf(fo, "%s : %s\n", type, msg);
     fprintf( fo, "%s %s - %s : %s\n", bufdate, buftime, type, msg );
     fclose( fo );
   }
 
 }
 
-void RainMakerPlugin::LoadConf()
+void RainMakerPlugin::LoadJsonConf()
 {
-	using namespace jsonxx;
+	//WriteToLogFile("INFO", mRainMakerDataFile.c_str());
+	std::istringstream ss(mRainMakerDataFile.c_str());
+	//std::ifstream ss(mRainMakerDataFile, ifstream::in);
+	//ss << mRainMakerDataFile;
+	/**/
+	WriteToLogFile( "INFO", "loading JSON file...");
+	boost::property_tree::ptree pt;
+	try {
+		boost::property_tree::read_json(ss, pt);
+	}
+	catch (std::exception &e)
+	{
+		WriteToLogFile( "ERROR", "Error loading JSON file");
+	}
+	
+	mStartMode = pt.get<std::string>("StartMode");
+	mApplyCloudinessInstantly = pt.get<bool>("ApplyCloudinessInstantly");
+	mLoopWrFileReading = pt.get<bool>("LoopWrFileReading");
+	mOnceSessionWrFile = pt.get<std::string>("OnceSessionWrFile");
+	mOnceSessionSession = pt.get<std::string>("OnceSessionSession");
+	mEverySessionPracticeWrFile = pt.get<std::string>("EverySessionPracticeWrFile");
+	mEverySessionQualiWrFile = pt.get<std::string>("EverySessionQualiWrFile");
+	mEverySessionRaceWrFile = pt.get<std::string>("EverySessionRaceWrFile");
+	mTimeSessionWrFile = pt.get<std::string>("TimeSessionWrFile");
+	mTimeSessionStartTime = pt.get<int>("TimeSessionStartTime");
 
-	std::ifstream iFile(mRainMakerDataFile);
-	std::string strJSON((std::istreambuf_iterator<char>(iFile)), std::istreambuf_iterator<char>());
-	iFile.close();
+	if (mApplyCloudinessInstantly )
+	{
+		WriteToLogFile("INFO", "mApplyCloudinessInstantly is ON");
+	}
+	if (mLoopWrFileReading)
+	{
+		WriteToLogFile("INFO", "mLoopWrFileReading is ON");
+	}
 }
 
 void RainMakerPlugin::Startup( long version )
 {
-  WriteToLogFile( "a", "INFO", "-STARTUP-" );
+  WriteToLogFile( "INFO", "-STARTUP-" );
+
 }
 
 
 void RainMakerPlugin::Shutdown()
 {
-  WriteToLogFile( "a", "INFO", "-SHUTDOWN-" );
+  WriteToLogFile( "INFO", "-SHUTDOWN-" );
 }
 
 
 void RainMakerPlugin::StartSession()
 {
-  WriteToLogFile( "a", "INFO", "--STARTSESSION--" );
+  WriteToLogFile( "INFO", "--STARTSESSION--" );
+  LoadJsonConf();
 }
 
 
 void RainMakerPlugin::EndSession()
 {
-  WriteToLogFile( "a", "INFO", "--ENDSESSION--" );
+  WriteToLogFile( "INFO", "--ENDSESSION--" );
 }
 
 
 void RainMakerPlugin::EnterRealtime()
 {
   // start up timer every time we enter realtime
-  WriteToLogFile( "a", "INFO", "---ENTERREALTIME---" );
+  WriteToLogFile( "INFO", "---ENTERREALTIME---" );
 }
 
 
 void RainMakerPlugin::ExitRealtime()
 {
-  WriteToLogFile( "a", "INFO", "---EXITREALTIME---" );
+  WriteToLogFile( "INFO", "---EXITREALTIME---" );
 }
 
 
 
 void RainMakerPlugin::UpdateScoring( const ScoringInfoV01 &info )
 {
-
+	//WriteToLogFile( "INFO", mRainMakerData.StartMode.c_str());
+	//WriteToLogFile("INFO", "---UPDATESCORING---");
 }
